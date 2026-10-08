@@ -13,6 +13,7 @@ import {
   type Meal,
   type MealType,
 } from "@/lib/meals";
+import { searchFoods, type CommonFood } from "@/lib/foods";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -370,6 +371,26 @@ function AddMealForm({
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState(false);
+
+  const results = useMemo(
+    () => (picked ? [] : searchFoods(query)),
+    [query, picked],
+  );
+
+  function pickFood(food: CommonFood) {
+    setName(food.name);
+    setPortion(food.portion);
+    setType(food.type);
+    setKcal(String(food.kcal));
+    setProtein(String(food.protein));
+    setCarbs(String(food.carbs));
+    setFat(String(food.fat));
+    setQuery(food.name);
+    setPicked(true);
+    setError("");
+  }
 
   const inputCls =
     "h-10 w-full rounded-md bg-ink px-3 text-[14px] text-foreground ring-1 ring-line placeholder:text-dim focus:outline-none focus:ring-cy/60";
