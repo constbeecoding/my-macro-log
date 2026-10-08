@@ -429,6 +429,54 @@ function AddMealForm({
         Log it in one entry
       </p>
 
+      <div className="relative mb-4">
+        <span className={`${labelCls} text-cy`}>Search common meals</span>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPicked(false);
+          }}
+          placeholder="Try “chicken”, “sushi”, “pasta”…"
+          maxLength={80}
+          className={inputCls}
+        />
+        {results.length > 0 && (
+          <ul className="absolute inset-x-0 top-full z-10 mt-1.5 overflow-hidden rounded-md bg-ink ring-1 ring-line shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+            {results.map((f) => {
+              const c = MACRO_COLORS[MEAL_TYPE_META[f.type].color];
+              return (
+                <li key={f.name}>
+                  <button
+                    type="button"
+                    onClick={() => pickFood(f)}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-panel"
+                  >
+                    <span
+                      className={`grid size-7 shrink-0 place-items-center rounded font-mono text-[10px] ring-1 ${c.chip}`}
+                    >
+                      {MEAL_TYPE_META[f.type].letter}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-medium text-foreground">
+                        {f.name}
+                      </span>
+                      <span className="block truncate font-mono text-[10px] text-dim">
+                        {f.portion}
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] text-ash">
+                      {f.kcal} kcal
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
       <label className="mb-4 block">
         <span className={`${labelCls} text-ash`}>Food name</span>
         <input
