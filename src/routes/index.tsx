@@ -18,13 +18,13 @@ import { searchLiveFoods, type LiveFood } from "@/lib/foodSearch";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Volta — Daily Macro Tracker" },
+      { title: "Macrolift — Daily Macro Tracker" },
       {
         name: "description",
         content:
           "Track your everyday meals and macros. Log food, watch calories, protein, carbs and fat add up against your daily goals.",
       },
-      { property: "og:title", content: "Volta — Daily Macro Tracker" },
+      { property: "og:title", content: "Macrolift — Daily Macro Tracker" },
       {
         property: "og:description",
         content: "Log meals and track calories, protein, carbs and fat against your daily goals.",
@@ -141,10 +141,10 @@ function Index() {
           <div className="flex items-center gap-3">
             <span className="size-2.5 animate-pulse-dot rounded-full bg-cy shadow-[0_0_12px_var(--cy)]" />
             <span className="text-[15px] font-medium uppercase tracking-[0.2em] text-foreground">
-              Volta
+              Macrolift
             </span>
             <span className="hidden font-mono text-[11px] tracking-wider text-dim sm:inline">
-              MACRO OS · v1.0
+              MACRO LOG · v1.0
             </span>
           </div>
           <div className="flex items-center gap-3">
