@@ -13,7 +13,7 @@ import {
   type Meal,
   type MealType,
 } from "@/lib/meals";
-import { searchFoods, type CommonFood } from "@/lib/foods";
+import { searchLiveFoods, type LiveFood } from "@/lib/foodSearch";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -374,15 +374,43 @@ function AddMealForm({
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState(false);
 
-  const results = useMemo(
-    () => (picked ? [] : searchFoods(query)),
-    [query, picked],
-  );
+  const [results, setResults] = useState<LiveFood[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchNote, setSearchNote] = useState("");
 
-  function pickFood(food: CommonFood) {
+  useEffect(() => {
+    const q = query.trim();
+    if (picked || q.length < 2) {
+      setResults([]);
+      setSearching(false);
+      setSearchNote("");
+      return;
+    }
+    const ctrl = new AbortController();
+    setSearching(true);
+    const t = setTimeout(() => {
+      searchLiveFoods(q, ctrl.signal)
+        .then((r) => {
+          setResults(r);
+          setSearchNote(r.length ? "" : "No matches — try another word or enter it manually.");
+        })
+        .catch((e) => {
+          if (ctrl.signal.aborted) return;
+          void e;
+          setResults([]);
+          setSearchNote("Food database unavailable right now — enter values manually.");
+        })
+        .finally(() => !ctrl.signal.aborted && setSearching(false));
+    }, 350);
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
+  }, [query, picked]);
+
+  function pickFood(food: LiveFood) {
     setName(food.name);
     setPortion(food.portion);
-    setType(food.type);
     setKcal(String(food.kcal));
     setProtein(String(food.protein));
     setCarbs(String(food.carbs));
@@ -430,7 +458,7 @@ function AddMealForm({
       </p>
 
       <div className="relative mb-4">
-        <span className={`${labelCls} text-cy`}>Search common meals</span>
+        <span className={`${labelCls} text-cy`}>Search food database</span>
         <input
           type="text"
           value={query}
@@ -438,41 +466,39 @@ function AddMealForm({
             setQuery(e.target.value);
             setPicked(false);
           }}
-          placeholder="Try “chicken”, “sushi”, “pasta”…"
+          placeholder="Try “greek yogurt”, “banana”, “clif bar”…"
           maxLength={80}
           className={inputCls}
         />
+        {(searching || searchNote) && results.length === 0 && (
+          <p className="mt-1.5 font-mono text-[10px] text-dim">
+            {searching ? "Searching…" : searchNote}
+          </p>
+        )}
         {results.length > 0 && (
-          <ul className="absolute inset-x-0 top-full z-10 mt-1.5 overflow-hidden rounded-md bg-ink ring-1 ring-line shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
-            {results.map((f) => {
-              const c = MACRO_COLORS[MEAL_TYPE_META[f.type].color];
-              return (
-                <li key={f.name}>
-                  <button
-                    type="button"
-                    onClick={() => pickFood(f)}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-panel"
-                  >
-                    <span
-                      className={`grid size-7 shrink-0 place-items-center rounded font-mono text-[10px] ring-1 ${c.chip}`}
-                    >
-                      {MEAL_TYPE_META[f.type].letter}
+          <ul className="absolute inset-x-0 top-full z-10 mt-1.5 max-h-80 overflow-y-auto rounded-md bg-ink ring-1 ring-line shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+            {results.map((f) => (
+              <li key={f.id}>
+                <button
+                  type="button"
+                  onClick={() => pickFood(f)}
+                  className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-panel"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-medium text-foreground">
+                      {f.name}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] font-medium text-foreground">
-                        {f.name}
-                      </span>
-                      <span className="block truncate font-mono text-[10px] text-dim">
-                        {f.portion}
-                      </span>
+                    <span className="block truncate font-mono text-[10px] text-dim">
+                      {f.portion} · P {f.protein} · C {f.carbs} · F {f.fat}
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] text-ash">
-                      {f.kcal} kcal
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
+                  </span>
+                  <span className="shrink-0 font-mono text-[11px] text-ash">{f.kcal} kcal</span>
+                </button>
+              </li>
+            ))}
+            <li className="px-3 py-1.5 font-mono text-[9px] uppercase tracking-wider text-dim">
+              Data: Open Food Facts
+            </li>
           </ul>
         )}
       </div>
