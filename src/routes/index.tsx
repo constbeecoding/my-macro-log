@@ -43,8 +43,15 @@ const MACRO_COLORS = {
 } as const;
 
 function Index() {
-  const [meals, setMeals] = useState<Meal[]>(() => loadMeals());
-  const [goals, setGoals] = useState<Goals>(() => loadGoals());
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setMeals(loadMeals());
+    setGoals(loadGoals());
+    setHydrated(true);
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [editingGoals, setEditingGoals] = useState(false);
 
