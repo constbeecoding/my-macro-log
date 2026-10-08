@@ -45,9 +45,18 @@ const LEGACY_GOALS_KEY = "volta.goals.v1";
 export function loadMeals(): Meal[] {
   try {
     const raw = localStorage.getItem(MEALS_KEY);
-    if (!raw) return seedMeals();
-    const parsed = JSON.parse(raw) as Meal[];
-    return Array.isArray(parsed) ? parsed : [];
+    if (raw) {
+      const parsed = JSON.parse(raw) as Meal[];
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    const legacy = localStorage.getItem(LEGACY_MEALS_KEY);
+    if (legacy) {
+      localStorage.setItem(MEALS_KEY, legacy);
+      localStorage.removeItem(LEGACY_MEALS_KEY);
+      const parsed = JSON.parse(legacy) as Meal[];
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    return seedMeals();
   } catch {
     return [];
   }
@@ -59,7 +68,7 @@ export function saveMeals(meals: Meal[]) {
 
 export function loadGoals(): Goals {
   try {
-    const raw = localStorage.getItem(GOALS_KEY);
+    const raw = localStorage.getItem(GOALS_KEY) ?? localStorage.getItem(LEGACY_GOALS_KEY);
     if (!raw) return DEFAULT_GOALS;
     return { ...DEFAULT_GOALS, ...(JSON.parse(raw) as Partial<Goals>) };
   } catch {
