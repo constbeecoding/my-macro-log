@@ -65,7 +65,7 @@ export async function searchLiveFoods(q: string, signal?: AbortSignal): Promise<
     "fields",
     "code,product_name,brands,serving_size,serving_quantity,nutriments",
   );
-  const res = await fetch(url, { signal });
+  const res = await fetch(url, { signal: signal ?? null });
   if (!res.ok) throw new Error("lookup failed");
   const data = (await res.json()) as { hits?: Hit[] };
   const seen = new Set<string>();
