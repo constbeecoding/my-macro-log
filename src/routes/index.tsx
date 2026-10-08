@@ -80,7 +80,7 @@ function Index() {
         .filter((m) => m.date === key)
         .reduce((s, m) => s + m.kcal, 0);
       days.push({
-        label: "SMTWTFS"[d.getDay()],
+        label: "SMTWTFS".charAt(d.getDay()),
         date: key,
         kcal,
         isToday: key === today,
