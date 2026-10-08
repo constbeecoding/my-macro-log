@@ -37,8 +37,10 @@ export function todayKey(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
-const MEALS_KEY = "volta.meals.v1";
-const GOALS_KEY = "volta.goals.v1";
+const MEALS_KEY = "macrolift.meals.v1";
+const GOALS_KEY = "macrolift.goals.v1";
+const LEGACY_MEALS_KEY = "volta.meals.v1";
+const LEGACY_GOALS_KEY = "volta.goals.v1";
 
 export function loadMeals(): Meal[] {
   try {
