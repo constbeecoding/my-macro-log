@@ -1,4 +1,9 @@
-# My Macro Tracker
+# Web App Vuln Demo
+A vibe coded web app demo used to show web security vulnerabilities.
+
+----
+
+## My Macro Tracker
 
 I'd love to build a simple web app that tracks my every day meals, so that I can track my macros.
 
