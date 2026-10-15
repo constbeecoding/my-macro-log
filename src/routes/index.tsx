@@ -14,6 +14,8 @@ import {
   type MealType,
 } from "@/lib/meals";
 import { searchLiveFoods, type LiveFood } from "@/lib/foodSearch";
+import { submitFeedback } from "@/lib/feedback.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,6 +55,7 @@ function Index() {
   }, []);
   const [showForm, setShowForm] = useState(false);
   const [editingGoals, setEditingGoals] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const today = todayKey();
   const todayMeals = useMemo(
@@ -148,6 +151,12 @@ function Index() {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="hidden h-9 items-center rounded-md bg-panel px-3 font-mono text-[11px] uppercase tracking-wider text-ash ring-1 ring-line transition-colors hover:text-foreground hover:ring-cy/50 sm:flex"
+            >
+              Feedback
+            </button>
             <button
               onClick={() => setEditingGoals(true)}
               className="hidden h-9 items-center gap-2 rounded-md bg-panel px-3 ring-1 ring-line transition-colors hover:ring-cy/50 md:flex"
@@ -352,6 +361,7 @@ function Index() {
       {editingGoals && (
         <GoalsDialog goals={goals} onSave={updateGoals} onClose={() => setEditingGoals(false)} />
       )}
+      {showFeedback && <FeedbackDialog onClose={() => setShowFeedback(false)} />}
     </div>
   );
 }
@@ -588,6 +598,145 @@ function AddMealForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function FeedbackDialog({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [category, setCategory] = useState<"bug" | "improvement" | "other">("bug");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const inputCls =
+    "h-10 w-full rounded-md bg-ink px-3 text-[14px] text-foreground ring-1 ring-line placeholder:text-dim focus:outline-none focus:ring-cy/60";
+  const labelCls = "mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em]";
+
+  const categories = [
+    { value: "bug" as const, label: "Bug", color: "mag" as const },
+    { value: "improvement" as const, label: "Idea", color: "lime" as const },
+    { value: "other" as const, label: "Other", color: "cy" as const },
+  ];
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return setError("Tell us your name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return setError("Enter a valid email address.");
+    if (!message.trim()) return setError("Write a short message.");
+    if (message.trim().length > 2000) return setError("Message must be under 2000 characters.");
+    setError("");
+    setSending(true);
+    try {
+      await submitFeedback({
+        data: { name: name.trim(), email: email.trim(), category, message: message.trim() },
+      });
+      toast.success("Thanks — your message was sent!");
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Try again.");
+      setSending(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md animate-rise rounded-[min(1vw,14px)] bg-panel p-6 ring-1 ring-line"
+      >
+        <div className="mb-1 flex items-center gap-2">
+          <span className="size-2 rounded-full bg-mag" />
+          <h2 className="text-[15px] font-semibold text-foreground">Send feedback</h2>
+        </div>
+        <p className="mb-5 font-mono text-[11px] uppercase tracking-wider text-dim">
+          Report a bug or suggest an improvement
+        </p>
+
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className={`${labelCls} text-ash`}>Name</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              maxLength={100}
+              className={inputCls}
+            />
+          </label>
+          <label className="block">
+            <span className={`${labelCls} text-ash`}>Email</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              maxLength={255}
+              className={inputCls}
+            />
+          </label>
+        </div>
+
+        <div className="mb-4">
+          <span className={`${labelCls} text-ash`}>What's it about?</span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {categories.map((c) => {
+              const active = category === c.value;
+              const color = MACRO_COLORS[c.color];
+              return (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCategory(c.value)}
+                  className={`h-9 rounded-md font-mono text-[11px] uppercase ring-1 transition-colors ${
+                    active ? color.chip : "bg-ink text-dim ring-line hover:text-ash"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <label className="mb-5 block">
+          <span className={`${labelCls} text-ash`}>Message</span>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="What happened, or what would you like to see?"
+            maxLength={2000}
+            rows={4}
+            className="w-full resize-none rounded-md bg-ink px-3 py-2.5 text-[14px] text-foreground ring-1 ring-line placeholder:text-dim focus:outline-none focus:ring-cy/60"
+          />
+        </label>
+
+        {error && <p className="mb-4 font-mono text-[12px] text-mag">{error}</p>}
+
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={sending}
+            className="h-11 flex-1 rounded-md bg-cy text-[14px] font-medium text-ink ring-1 ring-cy transition-colors hover:bg-cy/90 disabled:opacity-50"
+          >
+            {sending ? "Sending…" : "Send message"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-11 rounded-md bg-ink px-4 font-mono text-[12px] text-ash ring-1 ring-line transition-colors hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
