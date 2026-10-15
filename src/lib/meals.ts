@@ -37,7 +37,7 @@ export function todayKey(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
-const MEALS_KEY = "macrolift.meals.v2";
+const MEALS_KEY = "macrolift.meals.v3";
 const GOALS_KEY = "macrolift.goals.v1";
 const LEGACY_GOALS_KEY = "volta.goals.v1";
 
