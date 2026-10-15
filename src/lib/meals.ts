@@ -37,9 +37,8 @@ export function todayKey(d = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
-const MEALS_KEY = "macrolift.meals.v1";
+const MEALS_KEY = "macrolift.meals.v2";
 const GOALS_KEY = "macrolift.goals.v1";
-const LEGACY_MEALS_KEY = "volta.meals.v1";
 const LEGACY_GOALS_KEY = "volta.goals.v1";
 
 export function loadMeals(): Meal[] {
@@ -47,13 +46,6 @@ export function loadMeals(): Meal[] {
     const raw = localStorage.getItem(MEALS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Meal[];
-      return Array.isArray(parsed) ? parsed : [];
-    }
-    const legacy = localStorage.getItem(LEGACY_MEALS_KEY);
-    if (legacy) {
-      localStorage.setItem(MEALS_KEY, legacy);
-      localStorage.removeItem(LEGACY_MEALS_KEY);
-      const parsed = JSON.parse(legacy) as Meal[];
       return Array.isArray(parsed) ? parsed : [];
     }
     return seedMeals();
