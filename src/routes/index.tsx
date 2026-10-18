@@ -153,7 +153,7 @@ function Index() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFeedback(true)}
-              className="hidden h-9 items-center rounded-md bg-panel px-3 font-mono text-[11px] uppercase tracking-wider text-ash ring-1 ring-line transition-colors hover:text-foreground hover:ring-cy/50 sm:flex"
+              className="flex h-9 items-center rounded-md bg-panel px-3 font-mono text-[11px] uppercase tracking-wider text-ash ring-1 ring-line transition-colors hover:text-foreground hover:ring-cy/50"
             >
               Feedback
             </button>
