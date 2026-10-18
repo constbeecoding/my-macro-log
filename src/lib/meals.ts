@@ -47,9 +47,14 @@ export function loadMeals(): Meal[] {
     if (raw) {
       const parsed = JSON.parse(raw) as Meal[];
       if (!Array.isArray(parsed)) return [];
-      // If everything stored is old sample data, refresh to the current samples.
-      if (parsed.length > 0 && parsed.every((m) => m.id.startsWith("seed-"))) {
-        return seedMeals();
+      // Merge in any missing sample entries, keeping the user's own meals.
+      const seed = seedMeals();
+      const ids = new Set(parsed.map((m) => m.id));
+      const missing = seed.filter((m) => !ids.has(m.id));
+      if (missing.length > 0) {
+        const merged = [...parsed, ...missing];
+        saveMeals(merged);
+        return merged;
       }
       return parsed;
     }
