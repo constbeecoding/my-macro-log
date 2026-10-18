@@ -46,7 +46,12 @@ export function loadMeals(): Meal[] {
     const raw = localStorage.getItem(MEALS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Meal[];
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      // If everything stored is old sample data, refresh to the current samples.
+      if (parsed.length > 0 && parsed.every((m) => m.id.startsWith("seed-"))) {
+        return seedMeals();
+      }
+      return parsed;
     }
     return seedMeals();
   } catch {
